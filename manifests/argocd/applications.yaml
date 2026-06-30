@@ -1,0 +1,117 @@
+# ArgoCD Applications for platform components
+#
+# Each Application tracks a component in the platform.
+# Sync policy is manual — these are for GitOps lifecycle tracking,
+# not active reconciliation in the dev Kind cluster.
+#
+# Apply (after AppProject):
+#   kubectl apply -f manifests/argocd/applications.yaml
+#
+# View in ArgoCD UI:
+#   kubectl port-forward -n argocd svc/argocd-server 8080:443
+#   open https://localhost:8080
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-gateway
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ai-k8s-platform
+    component: networking
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/example/ai-k8s-platform
+    targetRevision: HEAD
+    path: templates/envoy-gateway
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: envoy-gateway-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-ai-gateway
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ai-k8s-platform
+    component: ai-gateway
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/example/ai-k8s-platform
+    targetRevision: HEAD
+    path: templates/aws-bedrock
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ai-k8s-platform
+    component: service-mesh
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/example/ai-k8s-platform
+    targetRevision: HEAD
+    path: templates/istio
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ai-k8s-platform
+    component: cache
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/example/ai-k8s-platform
+    targetRevision: HEAD
+    path: templates/redis
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: redis-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mcp-server
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: ai-k8s-platform
+    component: mcp
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/example/ai-k8s-platform
+    targetRevision: HEAD
+    path: templates/mcp-server
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kubernetes-mcp-server
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

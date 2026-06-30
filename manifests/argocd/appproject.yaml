@@ -1,0 +1,63 @@
+# ArgoCD AppProject for the AI K8s Platform
+#
+# Groups all platform namespaces under a single project for RBAC and policy.
+# Applications in this project can only deploy to the listed destination namespaces
+# and source from any repo (locked down in production via spec.sourceRepos).
+#
+# Prerequisites:
+#   ArgoCD must be installed in the argocd namespace.
+#   kubectl create namespace argocd
+#   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.3/manifests/install.yaml
+#
+# Apply:
+#   kubectl apply -f manifests/argocd/appproject.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  labels:
+    project: ai-k8s-platform
+spec:
+  description: AI Kubernetes Platform — Envoy Gateway, Istio, Redis, MCP Server
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: envoy-gateway-system
+      server: https://kubernetes.default.svc
+    - namespace: envoy-ai-gateway-system
+      server: https://kubernetes.default.svc
+    - namespace: istio-system
+      server: https://kubernetes.default.svc
+    - namespace: redis-system
+      server: https://kubernetes.default.svc
+    - namespace: kubernetes-mcp-server
+      server: https://kubernetes.default.svc
+    - namespace: default
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+    - group: aigateway.envoyproxy.io
+      kind: AIGatewayRoute
+    - group: aigateway.envoyproxy.io
+      kind: AIServiceBackend
+    - group: networking.istio.io
+      kind: ServiceEntry
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: ResourceQuota
+  roles:
+    - name: platform-admin
+      description: Full access to platform project
+      policies:
+        - p, proj:platform:platform-admin, applications, *, platform/*, allow
+      groups:
+        - platform-admins

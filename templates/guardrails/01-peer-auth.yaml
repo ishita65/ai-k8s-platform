@@ -1,0 +1,10 @@
+# STRICT mTLS for guardrails-agent namespace.
+# Mirrors the 'default' namespace policy in templates/istio/peer-auth.yaml.
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: guardrails-agent-strict
+  namespace: guardrails-agent
+spec:
+  mtls:
+    mode: STRICT

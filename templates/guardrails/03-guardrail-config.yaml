@@ -1,0 +1,29 @@
+# Per-gateway guardrail list. The sidecar reads GUARDRAIL_IDS from this ConfigMap.
+#
+# To use a different guardrail set on another gateway:
+#   1. Copy this file, rename the ConfigMap (e.g. guardrails-finance-list)
+#   2. Set the guardrail IDs appropriate for that application
+#   3. In that gateway's EnvoyProxy patch, set configMapKeyRef.name to the new name
+#
+# Format: JSON array of {"id": "...", "version": "...", "name": "..."}
+#   id      — Bedrock guardrail ID (output of aws bedrock create-guardrail)
+#   version — "DRAFT" or a published numeric version string (e.g., "1")
+#   name    — human-readable label; logged on block to identify which guardrail fired
+#
+# Guardrails are applied sequentially. The first to INTERVENE returns HTTP 403;
+# remaining guardrails are skipped (short-circuit). Order by broadest/fastest first
+# to minimize latency on blocked requests.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: guardrails-list            # rename per application, e.g. guardrails-finance-list
+  namespace: envoy-gateway-system  # must be in envoy-gateway-system (Envoy pod namespace)
+data:
+  guardrails.json: |
+    [
+      {
+        "id": "ik1odq8pwiqn",
+        "version": "DRAFT",
+        "name": "pii-test"
+      }
+    ]

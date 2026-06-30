@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: guardrails-agent
+  namespace: guardrails-agent
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: guardrails-agent
+      annotations:
+        proxy.istio.io/config: |
+          holdApplicationUntilProxyStarts: true
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: guardrails-agent
+          image: localhost:5001/guardrails-agent:latest
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              python agent.py
+              EXIT_CODE=$?
+              sleep 2
+              curl -sf -XPOST http://localhost:15020/quitquitquit \
+                && echo "[guardrails-agent] Istio sidecar signaled." \
+                || echo "[guardrails-agent] Warning: sidecar signal failed."
+              exit ${EXIT_CODE}
+          env:
+            - name: GATEWAY_URL
+              # Update after applying 05-gateway.yaml:
+              #   kubectl get svc -n envoy-gateway-system | grep guardrails
+              # Service name pattern: envoy-default-envoy-ai-gateway-guardrails-<hash>
+              value: "http://envoy-default-envoy-ai-gateway-guardrails-529a896e.envoy-gateway-system.svc.cluster.local:443"
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

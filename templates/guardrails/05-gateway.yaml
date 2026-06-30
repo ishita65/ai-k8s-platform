@@ -1,0 +1,24 @@
+# Dedicated HTTPS Gateway for guardrails traffic.
+# Reuses the existing wildcard TLS cert (SAN: *.envoy-gateway-system.svc.cluster.local).
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: envoy-ai-gateway-guardrails
+  namespace: default
+spec:
+  gatewayClassName: envoy-ai-gateway-basic
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: guardrails-envoy-proxy
+  listeners:
+    - name: https
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: envoy-ai-gateway-istio-tls   # existing wildcard cert in default ns
+            namespace: default

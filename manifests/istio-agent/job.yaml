@@ -1,0 +1,93 @@
+# Runs istio-agent as a one-shot Job with Istio sidecar injection enabled.
+#
+# TLS flow (no sidecar on gateway pods):
+#   Agent (http://) -> Istio sidecar intercepts port 443 -> upgrades to TLS
+#   -> Envoy Gateway terminates TLS (cert signed by Istio CA) -> Bedrock
+# The agent Python code uses http:// — TLS origination is transparent at the
+# sidecar layer via the DestinationRule in templates/istio/destination-rule.yaml.
+#
+# Sidecar termination fix: the container command is a shell wrapper that calls
+# `POST http://localhost:15020/quitquitquit` after agent.py exits. Without this,
+# istio-proxy keeps running after the main container finishes and the Job never
+# reaches the Completed state (Pod stays 1/2 Running indefinitely).
+# Port 15020 is the Istio pilot-agent admin port; it gracefully drains Envoy
+# connections before exiting, unlike the raw Envoy admin port (15000).
+#
+# Prerequisites:
+#   1. Install Istio:              templates/istio/istiod-values.yaml
+#   2. Generate TLS cert:          bash templates/istio/gen-gateway-cert.sh
+#   3. Apply gateway + routes:     kubectl apply -f templates/istio/gateway.yaml
+#   4. Apply DestinationRule:      kubectl apply -f templates/istio/destination-rule.yaml
+#   5. Apply PeerAuthentication:   kubectl apply -f templates/istio/peer-auth.yaml
+#   6. Label namespace:            kubectl label namespace default istio-injection=enabled
+#      (only default namespace — gateway namespaces are intentionally NOT injected)
+#   7. Find the new gateway svc:   kubectl get svc -n envoy-gateway-system
+#      Update GATEWAY_URL below to: http://<svc-name>.envoy-gateway-system.svc.cluster.local:443
+#   8. Build and load:
+#        docker build -t istio-agent:latest agents/istio-agent
+#        kind load docker-image istio-agent:latest --name ai-cluster
+#        docker tag istio-agent:latest localhost:5001/istio-agent:latest
+#        docker push localhost:5001/istio-agent:latest
+#   9. Apply: kubectl apply -f manifests/istio-agent/job.yaml
+#
+# Useful commands:
+#   kubectl logs -f job/istio-agent -c istio-agent   # main container output
+#   kubectl logs job/istio-agent -c istio-proxy       # sidecar access log (shows TLS handshake)
+#   kubectl get job istio-agent                        # check COMPLETIONS 1/1
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: istio-agent
+  namespace: default
+spec:
+  backoffLimit: 0
+  # Hard timeout: kills the Pod if the sidecar quit signal fails for any reason.
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: istio-agent
+      annotations:
+        # Wait for istio-proxy to be fully connected to istiod before starting
+        # the main container. Prevents connection-refused on the first LLM call.
+        proxy.istio.io/config: |
+          holdApplicationUntilProxyStarts: true
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: istio-agent
+          image: localhost:5001/istio-agent:latest
+          imagePullPolicy: Always
+          # Shell wrapper: run the Python agent, then signal istio-proxy to exit.
+          # EXIT_CODE is preserved so the Job correctly reflects success/failure.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              python agent.py
+              EXIT_CODE=$?
+              echo "[istio-agent] agent.py finished with exit code ${EXIT_CODE}."
+              echo "[istio-agent] Waiting 2s for in-flight Envoy requests to drain..."
+              sleep 2
+              echo "[istio-agent] Signaling Istio sidecar to exit (port 15020)..."
+              curl -sf -XPOST http://localhost:15020/quitquitquit \
+                && echo "[istio-agent] Istio sidecar signaled successfully." \
+                || echo "[istio-agent] Warning: failed to signal Istio sidecar."
+              exit ${EXIT_CODE}
+          env:
+            - name: GATEWAY_URL
+              # Envoy Gateway generates a hash-suffixed service for the new HTTPS listener.
+              # Find the exact name after applying templates/istio/gateway.yaml:
+              #   kubectl get svc -n envoy-gateway-system
+              # Use http:// scheme (not https://) — the Istio sidecar originates TLS
+              # transparently via the DestinationRule in templates/istio/destination-rule.yaml.
+              value: "http://envoy-default-envoy-ai-gateway-istio-0578ec7c.envoy-gateway-system.svc.cluster.local:443"
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

@@ -1,0 +1,63 @@
+# OPA Policy Violation Fix Agent — Kubernetes Job
+#
+# Build and push to the local registry before applying:
+#   docker build -t localhost:5001/violation-fix-agent:latest app-violation-fix-agent-poc/
+#   docker push localhost:5001/violation-fix-agent:latest
+#
+# Create namespace and apply:
+#   kubectl create namespace violation-fix-agent
+#   kubectl apply -f manifests/violation-fix-agent/job.yaml
+#
+# Watch logs (fixed YAML and README.md are printed to stdout):
+#   kubectl logs -n violation-fix-agent -l app=violation-fix-agent -f
+#
+# Check job status:
+#   kubectl get job violation-fix-agent -n violation-fix-agent
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: violation-fix-agent
+  namespace: violation-fix-agent
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: violation-fix-agent
+        env: dev
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: violation-fix-agent
+          image: localhost:5001/violation-fix-agent:latest
+          imagePullPolicy: Always
+          env:
+            # Find the actual service name with:
+            #   kubectl get svc -n envoy-gateway-system
+            - name: GATEWAY_URL
+              value: "http://envoy-default-envoy-ai-gateway-basic-21a9f8f8.envoy-gateway-system.svc.cluster.local"
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+            - name: BASE_DIR
+              value: "/app"
+            # Fixed output written to /output inside the container, which maps to
+            # /violation-fix-output on the Kind node. Retrieve with:
+            #   docker exec ai-cluster-control-plane find /violation-fix-output -type f
+            - name: OUTPUT_DIR
+              value: "/output"
+          volumeMounts:
+            - name: output
+              mountPath: /output
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+      volumes:
+        - name: output
+          hostPath:
+            path: /violation-fix-output
+            type: DirectoryOrCreate

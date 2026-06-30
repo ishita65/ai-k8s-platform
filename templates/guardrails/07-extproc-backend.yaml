@@ -1,0 +1,36 @@
+# Backend pointing to the guardrails sidecar via Unix domain socket.
+# The socket is shared via emptyDir volume between the envoy and guardrails-sidecar containers.
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: guardrails-extproc
+  namespace: default
+spec:
+  endpoints:
+    - unix:
+        path: /shared/guardrails/guardrails.sock
+---
+# EnvoyExtensionPolicy wires the ext_proc filter into the filter chain
+# for all routes on envoy-ai-gateway-guardrails.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: guardrails-extproc-policy
+  namespace: default
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: envoy-ai-gateway-guardrails
+  extProc:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: guardrails-extproc
+          namespace: default
+      processingMode:
+        request:
+          body: Buffered    # Full body buffered before ext_proc is called — required for JSON parsing
+      failOpen: true        # During initial deployment; flip to false after verification
+      messageTimeout: "5s"  # ApplyGuardrail typically responds in 200–500ms; 5s provides headroom

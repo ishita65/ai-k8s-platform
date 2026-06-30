@@ -1,0 +1,85 @@
+# Service Dependency Graph Agent — Kubernetes Job
+#
+# Discovers all components in the cluster, maps their dependencies via rule-based
+# detection and LLM-assisted fallback (Claude Sonnet via Envoy AI Gateway),
+# scores criticality, and writes four output files to a hostPath volume.
+#
+# Prerequisites:
+#   1. Build and push the image:
+#        docker build -t localhost:5001/service-graph-agent:latest agents/service-graph-agent
+#        docker push localhost:5001/service-graph-agent:latest
+#
+#   2. Create namespace and RBAC:
+#        kubectl create namespace service-graph-agent
+#        kubectl apply -f manifests/service-graph-agent/rbac.yaml
+#
+#   3. Apply this Job:
+#        kubectl apply -f manifests/service-graph-agent/job.yaml
+#
+# Watch logs:
+#   kubectl logs -n service-graph-agent -l app=service-graph-agent -f
+#
+# Check completion:
+#   kubectl get job service-graph-agent -n service-graph-agent
+#
+# Retrieve output files from the Kind node:
+#   docker exec ai-cluster-control-plane find /service-graph-output -type f
+#   docker cp ai-cluster-control-plane:/service-graph-output/dependency-graph.json .
+#   docker cp ai-cluster-control-plane:/service-graph-output/service-graph.html .
+#   docker cp ai-cluster-control-plane:/service-graph-output/component-graph.html .
+#   docker cp ai-cluster-control-plane:/service-graph-output/criticality-report.txt .
+#
+# Re-run (Jobs are immutable once created):
+#   kubectl delete job service-graph-agent -n service-graph-agent
+#   kubectl apply -f manifests/service-graph-agent/job.yaml
+#
+# Fault tolerance:
+#   backoffLimit: 3 — the Job retries up to 3 times on pod failure.
+#   Each retry reads /output/.checkpoint.db (on the hostPath volume) and resumes
+#   from the last completed node rather than starting over.
+#   Checkpoints older than 30 min are discarded (different Job run).
+#   To force a clean start: add "--fresh" to the container args, or delete
+#   /service-graph-output/.checkpoint.db on the Kind node before re-running.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: service-graph-agent
+  namespace: service-graph-agent
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: service-graph-agent
+        env: dev
+    spec:
+      restartPolicy: Never
+      serviceAccountName: service-graph-agent
+      containers:
+        - name: service-graph-agent
+          image: localhost:5001/service-graph-agent:latest
+          imagePullPolicy: Always
+          env:
+            - name: OUTPUT_DIR
+              value: "/output"
+            - name: GATEWAY_URL
+              value: "http://envoy-default-envoy-ai-gateway-basic-21a9f8f8.envoy-gateway-system.svc.cluster.local"
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+          volumeMounts:
+            - name: output
+              mountPath: /output
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: output
+          hostPath:
+            path: /service-graph-output
+            type: DirectoryOrCreate

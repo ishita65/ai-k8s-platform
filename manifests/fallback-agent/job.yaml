@@ -1,0 +1,55 @@
+# Runs fallback-agent as a one-shot Job.
+# The agent sends requests through Envoy AI Gateway for both the primary
+# (AWS Bedrock via Llama) and the fallback (OpenAI gpt-4o) paths.
+# On HTTP 404/409/5xx or connection/timeout errors the gateway route for
+# "gpt-4o" takes over; credentials for both backends are managed entirely
+# by BackendSecurityPolicy — no API keys are needed in the Pod.
+#
+# Prerequisites (in order):
+#   1. Apply the OpenAI API key secret:
+#        kubectl apply -f manifests/fallback-agent/openai-secret.yaml
+#   2. Apply the OpenAI gateway resources:
+#        kubectl apply -f manifests/fallback-agent/openai-gateway.yaml
+#   3. Build and load the image:
+#        docker build -t fallback-agent:latest agents/fallback-agent
+#        kind load docker-image fallback-agent:latest --name ai-cluster
+#   4. Apply this Job:
+#        kubectl apply -f manifests/fallback-agent/job.yaml
+#
+# Watch logs:
+#   kubectl logs -f job/fallback-agent
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fallback-agent
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: fallback-agent
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: fallback-agent
+          image: localhost:5001/fallback-agent:latest
+          imagePullPolicy: Always
+          env:
+            # Envoy Gateway service — find the exact name with:
+            #   kubectl get svc -n envoy-gateway-system
+            - name: GATEWAY_URL
+              value: "http://envoy-default-envoy-ai-gateway-basic-21a9f8f8.envoy-gateway-system.svc.cluster.local"
+            # Primary model — AIGatewayRoute routes this to AWS Bedrock.
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+            # Fallback model — AIGatewayRoute routes this to OpenAI via gateway.
+            - name: OPENAI_MODEL_ID
+              value: "gpt-4o"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

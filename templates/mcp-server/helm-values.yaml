@@ -1,0 +1,40 @@
+replicaCount: 1
+
+image:
+  registry: quay.io
+  repository: containers/kubernetes_mcp_server
+  version: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  automountToken: true
+
+rbac:
+  create: true
+  # Bind to the built-in "edit" ClusterRole for full read/write access
+  # across all standard Kubernetes resources in the cluster.
+  extraClusterRoleBindings:
+    - name: cluster-edit
+      roleRef:
+        name: edit
+        external: true
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  host: mcp-server.local
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+config:
+  port: "8080"

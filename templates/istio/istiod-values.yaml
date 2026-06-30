@@ -1,0 +1,48 @@
+# Istio istiod Helm values — minimal profile for Kind (no cloud LB, no CNI plugin).
+#
+# Install order:
+#   helm repo add istio https://istio-release.storage.googleapis.com/charts && helm repo update
+#   kubectl create namespace istio-system
+#   helm upgrade --install istio-base istio/base --namespace istio-system --version 1.24.x --wait
+#   helm upgrade --install istiod istio/istiod --namespace istio-system --version 1.24.x \
+#     --values templates/istio/istiod-values.yaml --wait
+
+global:
+  defaultResources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+meshConfig:
+  # Auto-upgrade connections to mTLS between sidecar-bearing pods (no DestinationRule needed).
+  enableAutoMtls: true
+
+  # Write access logs to stdout so traffic is visible via `kubectl logs <pod> -c istio-proxy`.
+  accessLogFile: /dev/stdout
+
+  outboundTrafficPolicy:
+    # ALLOW_ANY lets sidecars reach external FQDNs (e.g. bedrock-runtime.amazonaws.com)
+    # that are not registered as Kubernetes Services.
+    mode: ALLOW_ANY
+
+  defaultConfig:
+    # Hold the main container start until istio-proxy is fully connected to istiod.
+    # Prevents "connection refused" on the first LLM call in Job pods.
+    holdApplicationUntilProxyStarts: true
+
+pilot:
+  replicaCount: 1
+  autoscaleEnabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+sidecarInjectorWebhook:
+  # Inject only in namespaces explicitly labeled istio-injection=enabled.
+  enableNamespacesByDefault: false
+  # Rewrite liveness/readiness probes so they work through the sidecar.
+  rewriteAppHTTPProbe: true

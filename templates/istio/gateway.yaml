@@ -1,0 +1,57 @@
+# Dedicated HTTPS gateway for the istio-agent, separate from the existing
+# envoy-ai-gateway-basic (which stays on HTTP/80 for other agents).
+#
+# TLS is terminated by Envoy Gateway using a cert signed by Istio's root CA.
+# The Istio sidecar on the agent pod originates the TLS connection transparently
+# (see templates/istio/destination-rule.yaml). No sidecar is added to the gateway
+# pods — there is no envoy-over-envoy proxy chain.
+#
+# Run the cert generation script first, then apply:
+#   bash templates/istio/gen-gateway-cert.sh
+#   kubectl apply -f templates/istio/gateway.yaml
+#
+# After applying, find the generated service name and update job GATEWAY_URL:
+#   kubectl get svc -n envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: envoy-ai-gateway-istio
+  namespace: default
+spec:
+  gatewayClassName: envoy-ai-gateway-basic
+  listeners:
+    - name: https
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: envoy-ai-gateway-istio-tls
+            namespace: default
+---
+# Reuses the existing envoy-ai-gateway-basic-aws AIServiceBackend (and its
+# BackendSecurityPolicy / Backend / BackendTLSPolicy) from sample.yaml.
+# No new upstream resources are required.
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: envoy-ai-gateway-istio-aws
+  namespace: default
+spec:
+  parentRefs:
+    - name: envoy-ai-gateway-istio
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: us.meta.llama3-3-70b-instruct-v1:0
+      backendRefs:
+        - name: envoy-ai-gateway-basic-aws
+  llmRequestCosts:
+    - metadataKey: llm_total_token
+      type: TotalToken

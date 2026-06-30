@@ -1,0 +1,43 @@
+# Runs first-agent as a one-shot Job.
+# Build and push to the local registry before applying:
+#   docker build -t localhost:5001/first-agent:latest agents/first-agent
+#   docker push localhost:5001/first-agent:latest
+#
+# Then apply:
+#   kubectl apply -f manifests/first-agent/job.yaml
+#
+# Watch logs:
+#   kubectl logs -f job/first-agent
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: first-agent
+  namespace: default
+spec:
+  # Do not retry on failure so errors surface immediately.
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: first-agent
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: first-agent
+          image: localhost:5001/first-agent:latest
+          imagePullPolicy: Always
+          env:
+            # Envoy Gateway creates the service in envoy-gateway-system with a
+            # generated name. Find yours with:
+            #   kubectl get svc -n envoy-gateway-system
+            - name: GATEWAY_URL
+              value: "http://envoy-default-envoy-ai-gateway-basic-21a9f8f8.envoy-gateway-system.svc.cluster.local"
+            - name: MODEL_ID
+              value: "us.meta.llama3-3-70b-instruct-v1:0"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

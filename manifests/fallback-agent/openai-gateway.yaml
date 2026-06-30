@@ -1,0 +1,82 @@
+# Envoy AI Gateway resources for the OpenAI fallback backend.
+# The fallback-agent sends requests with model "gpt-4o"; the AIGatewayRoute
+# below matches that header and forwards to api.openai.com via the gateway.
+# The BackendSecurityPolicy injects the OpenAI API key automatically so the
+# agent code never handles credentials directly.
+#
+# Apply order (secret must exist before the policy reconciles):
+#   kubectl apply -f manifests/fallback-agent/openai-secret.yaml
+#   kubectl apply -f manifests/fallback-agent/openai-gateway.yaml
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: fallback-agent-openai
+  namespace: default
+spec:
+  parentRefs:
+    - name: envoy-ai-gateway-basic
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: gpt-4o
+      backendRefs:
+        - name: fallback-agent-openai
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: fallback-agent-openai
+  namespace: default
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    name: fallback-agent-openai
+    kind: Backend
+    group: gateway.envoyproxy.io
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: BackendSecurityPolicy
+metadata:
+  name: fallback-agent-openai-credentials
+  namespace: default
+spec:
+  targetRefs:
+    - group: aigateway.envoyproxy.io
+      kind: AIServiceBackend
+      name: fallback-agent-openai
+  type: APIKey
+  apiKey:
+    secretRef:
+      name: fallback-agent-openai
+      namespace: default
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: fallback-agent-openai
+  namespace: default
+spec:
+  endpoints:
+    - fqdn:
+        hostname: api.openai.com
+        port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
+metadata:
+  name: fallback-agent-openai-tls
+  namespace: default
+spec:
+  targetRefs:
+    - group: "gateway.envoyproxy.io"
+      kind: Backend
+      name: fallback-agent-openai
+  validation:
+    wellKnownCACertificates: "System"
+    hostname: api.openai.com

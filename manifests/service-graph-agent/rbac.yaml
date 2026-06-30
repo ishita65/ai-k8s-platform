@@ -1,0 +1,90 @@
+# RBAC for the Service Dependency Graph Agent.
+#
+# The agent reads cluster state to build the dependency graph.
+# It requires no write access — only get/list/watch on specific resource types.
+#
+# Apply before the Job:
+#   kubectl create namespace service-graph-agent
+#   kubectl apply -f manifests/service-graph-agent/rbac.yaml
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-graph-agent
+  namespace: service-graph-agent
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: service-graph-agent
+rules:
+  # Core resources
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - services
+      - secrets
+    verbs: ["get", "list", "watch"]
+
+  # Workload controllers
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs: ["get", "list", "watch"]
+
+  # Autoscaling
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+
+  # Gateway API (standard)
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources:
+      - gateways
+    verbs: ["get", "list", "watch"]
+
+  # Envoy Gateway — Backend CRD
+  - apiGroups: ["gateway.envoyproxy.io"]
+    resources:
+      - backends
+    verbs: ["get", "list", "watch"]
+
+  # Envoy AI Gateway CRDs
+  - apiGroups: ["aigateway.envoyproxy.io"]
+    resources:
+      - aigatewayroutes
+      - aiservicebackends
+      - backendsecuritypolicies
+      - backendtrafficpolicies
+    verbs: ["get", "list", "watch"]
+
+  # Istio networking CRDs
+  - apiGroups: ["networking.istio.io"]
+    resources:
+      - serviceentries
+    verbs: ["get", "list", "watch"]
+
+  # ArgoCD CRDs
+  - apiGroups: ["argoproj.io"]
+    resources:
+      - applications
+      - appprojects
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: service-graph-agent
+subjects:
+  - kind: ServiceAccount
+    name: service-graph-agent
+    namespace: service-graph-agent
+roleRef:
+  kind: ClusterRole
+  name: service-graph-agent
+  apiGroup: rbac.authorization.k8s.io

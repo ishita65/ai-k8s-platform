@@ -1,0 +1,42 @@
+# Token-based rate limit for first-agent (us.meta.llama3-3-70b-instruct-v1:0).
+# Budget: 100000 total tokens per hour (raised from 100 to allow violation-fix-agent testing).
+# Each model value gets its own isolated bucket via x-ai-eg-model Distinct selector.
+#
+# Prerequisites:
+#   - Redis running in redis-system (templates/redis.yaml)
+#   - Envoy Gateway installed with rate-limit addon Helm values (see README)
+#   - llmRequestCosts configured on the AIGatewayRoute (templates/aws-bedrock/sample.yaml)
+#
+# Apply:
+#   kubectl apply -f templates/aws-bedrock/sample.yaml
+#   kubectl apply -f manifests/rate-limiting/rate-limit.yaml
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: first-agent-token-ratelimit
+  namespace: default
+spec:
+  targetRefs:
+    - name: envoy-ai-gateway-basic
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rateLimit:
+    type: Global
+    global:
+      rules:
+        - clientSelectors:
+            - headers:
+                - name: x-ai-eg-model
+                  type: Distinct
+          limit:
+            requests: 100000
+            unit: Hour
+          cost:
+            request:
+              from: Number
+              number: 0
+            response:
+              from: Metadata
+              metadata:
+                namespace: io.envoy.ai_gateway
+                key: llm_total_token

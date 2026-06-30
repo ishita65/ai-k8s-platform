@@ -1,0 +1,23 @@
+# Routes Llama model requests through the guardrails gateway.
+# Reuses existing AIServiceBackend + Backend from templates/aws-bedrock/sample.yaml.
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: envoy-ai-gateway-guardrails-aws
+  namespace: default
+spec:
+  parentRefs:
+    - name: envoy-ai-gateway-guardrails
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: us.meta.llama3-3-70b-instruct-v1:0
+      backendRefs:
+        - name: envoy-ai-gateway-basic-aws
+  llmRequestCosts:
+    - metadataKey: llm_total_token
+      type: TotalToken

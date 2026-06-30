@@ -1,0 +1,67 @@
+# EnvoyProxy injects the guardrails sidecar into Envoy proxy pods via StrategicMerge patch.
+# The sidecar shares a Unix domain socket with Envoy for low-latency ext_proc gRPC calls.
+# Both containers mount the same emptyDir volume at /shared/guardrails.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: guardrails-envoy-proxy
+  namespace: default
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              template:
+                spec:
+                  volumes:
+                    - name: guardrails-socket
+                      emptyDir: {}
+                  containers:
+                    - name: envoy
+                      volumeMounts:
+                        - name: guardrails-socket
+                          mountPath: /shared/guardrails
+                    - name: guardrails-sidecar
+                      image: localhost:5001/guardrails-sidecar:latest
+                      imagePullPolicy: Always
+                      env:
+                        - name: SOCKET_PATH
+                          value: "/shared/guardrails/guardrails.sock"
+                        - name: GUARDRAIL_IDS
+                          valueFrom:
+                            configMapKeyRef:
+                              name: guardrails-list
+                              key: guardrails.json
+                        - name: AWS_DEFAULT_REGION
+                          value: "us-east-1"
+                        - name: FAIL_OPEN
+                          value: "true"
+                        - name: AWS_ACCESS_KEY_ID
+                          valueFrom:
+                            secretKeyRef:
+                              name: guardrails-sidecar-aws-credentials
+                              key: AWS_ACCESS_KEY_ID
+                        - name: AWS_SECRET_ACCESS_KEY
+                          valueFrom:
+                            secretKeyRef:
+                              name: guardrails-sidecar-aws-credentials
+                              key: AWS_SECRET_ACCESS_KEY
+                      volumeMounts:
+                        - name: guardrails-socket
+                          mountPath: /shared/guardrails
+                      livenessProbe:
+                        exec:
+                          command: ["/bin/sh", "-c", "test -S /shared/guardrails/guardrails.sock"]
+                        initialDelaySeconds: 10
+                        periodSeconds: 30
+                      resources:
+                        requests:
+                          cpu: "100m"
+                          memory: "128Mi"
+                        limits:
+                          cpu: "500m"
+                          memory: "256Mi"

@@ -1,0 +1,31 @@
+# PeerAuthentication policies for the AI K8s platform.
+#
+# Two-tier strategy:
+#   1. istio-system (mesh-wide) — PERMISSIVE baseline so non-sidecar namespaces
+#      (envoy-gateway-system, envoy-ai-gateway-system, redis) are unaffected.
+#   2. default — STRICT; every agent Job has a sidecar, reject plaintext to agent pods.
+#
+# Only the default namespace is Istio-injected. The gateway namespaces have no
+# sidecars — TLS to the gateway is handled by sidecar TLS origination (DestinationRule)
+# rather than by adding Istio to the gateway pods.
+#
+# Apply:
+#   kubectl apply -f templates/istio/peer-auth.yaml
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mesh-wide-permissive
+  namespace: istio-system
+spec:
+  mtls:
+    mode: PERMISSIVE
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-strict
+  namespace: default
+spec:
+  mtls:
+    mode: STRICT

@@ -1,0 +1,17 @@
+# TLS origination for the guardrails-agent Istio sidecar.
+# Mirrors templates/istio/destination-rule.yaml pattern scoped to guardrails-agent ns.
+# The wildcard host covers the hash-suffixed service created for envoy-ai-gateway-guardrails.
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: envoy-gateway-tls-origination
+  namespace: guardrails-agent
+spec:
+  host: "*.envoy-gateway-system.svc.cluster.local"
+  trafficPolicy:
+    portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: SIMPLE
+          caCertificates: /var/run/secrets/istio/root-cert.pem
