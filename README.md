@@ -2,6 +2,8 @@
 
 A local [Kind](https://kind.sigs.k8s.io/) cluster that runs AI agents and proxies LLM requests through [Envoy AI Gateway](https://aigateway.envoyproxy.io/) to AWS Bedrock and OpenAI.
 
+This project is work in progress.
+
 ## Architecture
 
 Requests reach the cluster through the `envoy-ai-gateway-basic` Gateway. The AI Gateway routes by the `x-ai-eg-model` header value to the appropriate backend:
@@ -25,16 +27,7 @@ AWS Bedrock / OpenAI
 | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` | AWS Bedrock (Anthropic) | `AWSAnthropic` |
 | `gpt-4o` | OpenAI (fallback agent only) | `OpenAI` |
 
-## Project Status
 
-| Goal | Status |
-|---|---|
-| Deploy Envoy Gateway + Envoy AI Gateway on Kind | Done |
-| Connect to AWS Bedrock (Meta Llama + Anthropic Claude) | Done |
-| First agent via Envoy AI Gateway | Done |
-| Fallback agent (Bedrock → OpenAI) | Done |
-| Token-based rate limiting | Done |
-| Istio mTLS sidecar integration | Done |
 
 ## Documentation
 
