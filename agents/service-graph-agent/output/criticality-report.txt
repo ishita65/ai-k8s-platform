@@ -1,0 +1,71 @@
+SERVICE DEPENDENCY GRAPH - CRITICALITY REPORT
+Generated: 2026-06-13 19:41:42 UTC
+================================================================================
+Rank    Score  Kind                       Dependents  Node ID
+--------------------------------------------------------------------------------
+   1     80.0  Backend                             2  Backend/default/envoy-ai-gateway-basic-aws
+   2     66.4  Gateway                             4  Gateway/default/envoy-ai-gateway-basic
+   3     66.4  AIServiceBackend                    4  AIServiceBackend/default/envoy-ai-gateway-basic-aws
+   4     40.0  Backend                             1  Backend/default/fallback-agent-openai
+   5     39.8  AIServiceBackend                    2  AIServiceBackend/default/fallback-agent-openai
+   6     33.2  AIServiceBackend                    2  AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic
+   7     28.8  Backend                             1  Backend/default/envoy-ai-gateway-basic-testupstream
+   8     23.2  Virtual                             1  virtual/istiod
+   9     16.6  Gateway                             1  Gateway/default/envoy-ai-gateway-guardrails
+  10     16.6  Gateway                             1  Gateway/default/envoy-ai-gateway-istio
+  11     16.6  AIServiceBackend                    1  AIServiceBackend/default/envoy-ai-gateway-basic-testupstream
+  12      0.0  Deployment                          0  Deployment/default/envoy-ai-gateway-basic-testupstream
+  13      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/envoy-ai-gateway-basic
+  14      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/envoy-ai-gateway-basic-aws
+  15      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic
+  16      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws
+  17      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/envoy-ai-gateway-istio-aws
+  18      0.0  AIGatewayRoute                      0  AIGatewayRoute/default/fallback-agent-openai
+  19      0.0  BackendSecurityPolicy               0  BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials
+  20      0.0  BackendSecurityPolicy               0  BackendSecurityPolicy/default/fallback-agent-openai-credentials
+
+================================================================================
+DEPENDENCY DETAIL (blast radius - what depends on each component)
+================================================================================
+
+Backend/default/envoy-ai-gateway-basic-aws  (score=80.0)
+  <- AIServiceBackend/default/envoy-ai-gateway-basic-aws
+  <- AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic
+
+Gateway/default/envoy-ai-gateway-basic  (score=66.4)
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic-aws
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic
+  <- AIGatewayRoute/default/fallback-agent-openai
+
+AIServiceBackend/default/envoy-ai-gateway-basic-aws  (score=66.4)
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic-aws
+  <- AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws
+  <- AIGatewayRoute/default/envoy-ai-gateway-istio-aws
+  <- BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials
+
+Backend/default/fallback-agent-openai  (score=40.0)
+  <- AIServiceBackend/default/fallback-agent-openai
+
+AIServiceBackend/default/fallback-agent-openai  (score=39.8)
+  <- AIGatewayRoute/default/fallback-agent-openai
+  <- BackendSecurityPolicy/default/fallback-agent-openai-credentials
+
+AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic  (score=33.2)
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic
+  <- BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials
+
+Backend/default/envoy-ai-gateway-basic-testupstream  (score=28.8)
+  <- AIServiceBackend/default/envoy-ai-gateway-basic-testupstream
+
+virtual/istiod  (score=23.2)
+  <- Deployment/default/envoy-ai-gateway-basic-testupstream
+
+Gateway/default/envoy-ai-gateway-guardrails  (score=16.6)
+  <- AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws
+
+Gateway/default/envoy-ai-gateway-istio  (score=16.6)
+  <- AIGatewayRoute/default/envoy-ai-gateway-istio-aws
+
+AIServiceBackend/default/envoy-ai-gateway-basic-testupstream  (score=16.6)
+  <- AIGatewayRoute/default/envoy-ai-gateway-basic

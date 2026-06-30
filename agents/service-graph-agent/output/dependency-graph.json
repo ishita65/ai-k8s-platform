@@ -1,0 +1,371 @@
+{
+  "nodes": [
+    {
+      "id": "Backend/default/envoy-ai-gateway-basic-aws",
+      "kind": "Backend",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws",
+      "labels": {},
+      "criticality_score": 80.0,
+      "in_degree": 2,
+      "pagerank": 0.140425,
+      "dependents_count": 2,
+      "dependencies_count": 0
+    },
+    {
+      "id": "Gateway/default/envoy-ai-gateway-basic",
+      "kind": "Gateway",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic",
+      "labels": {},
+      "criticality_score": 66.37,
+      "in_degree": 4,
+      "pagerank": 0.077894,
+      "dependents_count": 4,
+      "dependencies_count": 0
+    },
+    {
+      "id": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "kind": "AIServiceBackend",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws",
+      "labels": {},
+      "criticality_score": 66.37,
+      "in_degree": 4,
+      "pagerank": 0.077894,
+      "dependents_count": 4,
+      "dependencies_count": 1
+    },
+    {
+      "id": "Backend/default/fallback-agent-openai",
+      "kind": "Backend",
+      "namespace": "default",
+      "name": "fallback-agent-openai",
+      "labels": {},
+      "criticality_score": 40.0,
+      "in_degree": 1,
+      "pagerank": 0.084637,
+      "dependents_count": 1,
+      "dependencies_count": 0
+    },
+    {
+      "id": "AIServiceBackend/default/fallback-agent-openai",
+      "kind": "AIServiceBackend",
+      "namespace": "default",
+      "name": "fallback-agent-openai",
+      "labels": {},
+      "criticality_score": 39.78,
+      "in_degree": 2,
+      "pagerank": 0.065633,
+      "dependents_count": 2,
+      "dependencies_count": 1
+    },
+    {
+      "id": "AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "kind": "AIServiceBackend",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "labels": {},
+      "criticality_score": 33.19,
+      "in_degree": 2,
+      "pagerank": 0.053372,
+      "dependents_count": 2,
+      "dependencies_count": 1
+    },
+    {
+      "id": "Backend/default/envoy-ai-gateway-basic-testupstream",
+      "kind": "Backend",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-testupstream",
+      "labels": {},
+      "criticality_score": 28.79,
+      "in_degree": 1,
+      "pagerank": 0.063794,
+      "dependents_count": 1,
+      "dependencies_count": 0
+    },
+    {
+      "id": "virtual/istiod",
+      "kind": "Virtual",
+      "namespace": "",
+      "name": "istiod",
+      "labels": {},
+      "criticality_score": 23.19,
+      "in_degree": 1,
+      "pagerank": 0.053372,
+      "dependents_count": 1,
+      "dependencies_count": 0
+    },
+    {
+      "id": "Gateway/default/envoy-ai-gateway-guardrails",
+      "kind": "Gateway",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-guardrails",
+      "labels": {},
+      "criticality_score": 16.59,
+      "in_degree": 1,
+      "pagerank": 0.041111,
+      "dependents_count": 1,
+      "dependencies_count": 0
+    },
+    {
+      "id": "Gateway/default/envoy-ai-gateway-istio",
+      "kind": "Gateway",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-istio",
+      "labels": {},
+      "criticality_score": 16.59,
+      "in_degree": 1,
+      "pagerank": 0.041111,
+      "dependents_count": 1,
+      "dependencies_count": 0
+    },
+    {
+      "id": "AIServiceBackend/default/envoy-ai-gateway-basic-testupstream",
+      "kind": "AIServiceBackend",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-testupstream",
+      "labels": {},
+      "criticality_score": 16.59,
+      "in_degree": 1,
+      "pagerank": 0.041111,
+      "dependents_count": 1,
+      "dependencies_count": 1
+    },
+    {
+      "id": "Deployment/default/envoy-ai-gateway-basic-testupstream",
+      "kind": "Deployment",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-testupstream",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 1
+    },
+    {
+      "id": "AIGatewayRoute/default/envoy-ai-gateway-basic",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-guardrails-aws",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "AIGatewayRoute/default/envoy-ai-gateway-istio-aws",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-istio-aws",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "AIGatewayRoute/default/fallback-agent-openai",
+      "kind": "AIGatewayRoute",
+      "namespace": "default",
+      "name": "fallback-agent-openai",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials",
+      "kind": "BackendSecurityPolicy",
+      "namespace": "default",
+      "name": "envoy-ai-gateway-basic-aws-credentials",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 2
+    },
+    {
+      "id": "BackendSecurityPolicy/default/fallback-agent-openai-credentials",
+      "kind": "BackendSecurityPolicy",
+      "namespace": "default",
+      "name": "fallback-agent-openai-credentials",
+      "labels": {},
+      "criticality_score": 0.0,
+      "in_degree": 0,
+      "pagerank": 0.02885,
+      "dependents_count": 0,
+      "dependencies_count": 1
+    }
+  ],
+  "edges": [
+    {
+      "from": "Deployment/default/envoy-ai-gateway-basic-testupstream",
+      "to": "virtual/istiod",
+      "reason": "Deployment in istio-injection=enabled namespace 'default'",
+      "rule": "NS-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic",
+      "to": "Gateway/default/envoy-ai-gateway-basic",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-basic'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws",
+      "to": "Gateway/default/envoy-ai-gateway-basic",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-basic'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "to": "Gateway/default/envoy-ai-gateway-basic",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-basic'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws",
+      "to": "Gateway/default/envoy-ai-gateway-guardrails",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-guardrails'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-istio-aws",
+      "to": "Gateway/default/envoy-ai-gateway-istio",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-istio'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/fallback-agent-openai",
+      "to": "Gateway/default/envoy-ai-gateway-basic",
+      "reason": "AIGatewayRoute parentRef \u2192 Gateway 'envoy-ai-gateway-basic'",
+      "rule": "EG-01"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-testupstream",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-testupstream'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws-bedrock-anthropic'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-guardrails-aws",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIGatewayRoute/default/envoy-ai-gateway-istio-aws",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIGatewayRoute/default/fallback-agent-openai",
+      "to": "AIServiceBackend/default/fallback-agent-openai",
+      "reason": "AIGatewayRoute backendRef \u2192 AIServiceBackend 'fallback-agent-openai'",
+      "rule": "EG-02"
+    },
+    {
+      "from": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "to": "Backend/default/envoy-ai-gateway-basic-aws",
+      "reason": "AIServiceBackend backendRef \u2192 Backend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-03"
+    },
+    {
+      "from": "AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "to": "Backend/default/envoy-ai-gateway-basic-aws",
+      "reason": "AIServiceBackend backendRef \u2192 Backend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-03"
+    },
+    {
+      "from": "AIServiceBackend/default/envoy-ai-gateway-basic-testupstream",
+      "to": "Backend/default/envoy-ai-gateway-basic-testupstream",
+      "reason": "AIServiceBackend backendRef \u2192 Backend 'envoy-ai-gateway-basic-testupstream'",
+      "rule": "EG-03"
+    },
+    {
+      "from": "AIServiceBackend/default/fallback-agent-openai",
+      "to": "Backend/default/fallback-agent-openai",
+      "reason": "AIServiceBackend backendRef \u2192 Backend 'fallback-agent-openai'",
+      "rule": "EG-03"
+    },
+    {
+      "from": "BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws",
+      "reason": "BackendSecurityPolicy targetRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws'",
+      "rule": "EG-04"
+    },
+    {
+      "from": "BackendSecurityPolicy/default/envoy-ai-gateway-basic-aws-credentials",
+      "to": "AIServiceBackend/default/envoy-ai-gateway-basic-aws-bedrock-anthropic",
+      "reason": "BackendSecurityPolicy targetRef \u2192 AIServiceBackend 'envoy-ai-gateway-basic-aws-bedrock-anthropic'",
+      "rule": "EG-04"
+    },
+    {
+      "from": "BackendSecurityPolicy/default/fallback-agent-openai-credentials",
+      "to": "AIServiceBackend/default/fallback-agent-openai",
+      "reason": "BackendSecurityPolicy targetRef \u2192 AIServiceBackend 'fallback-agent-openai'",
+      "rule": "EG-04"
+    }
+  ],
+  "summary": {
+    "total_nodes": 20,
+    "total_edges": 20,
+    "generated_at": "2026-06-13T19:41:42.090231+00:00"
+  }
+}

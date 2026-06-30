@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY agent.py .
+COPY collector.py analyzer.py scorer.py reporter.py orchestrator.py .
 
-CMD ["python", "agent.py"]
+CMD ["python", "orchestrator.py"]
