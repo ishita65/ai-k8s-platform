@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kubectl get *)",
+      "Bash(kubectl describe *)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl apply *)",
+      "Bash(kubectl label *)",
+      "Bash(docker build *)",
+      "Bash(docker tag *)",
+      "Bash(docker push *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}
